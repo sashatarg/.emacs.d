@@ -70,6 +70,18 @@
 
 (add-hook 'org-mode-hook 'visual-line-mode)
 
+(package-safe-install 'use-package)
+
+(use-package scala-mode2
+  :ensure t
+  :mode (("\\.scala$" . scala-mode))
+  :config
+  (progn
+    (use-package ensime
+      :ensure t)
+
+    (add-hook 'scala-mode-hook #'ensime-scala-mode-hook)))
+
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
  ;; If you edit it by hand, you could mess it up, so be careful.
