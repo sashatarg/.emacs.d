@@ -17,6 +17,10 @@
 (when (not package-archive-contents)
   (package-refresh-contents))
 
+(unless (package-installed-p 'use-package)
+  (package-install 'use-package))
+(require 'use-package)
+
 (package-safe-install 'magit)
 
 (windmove-default-keybindings)
@@ -70,7 +74,38 @@
 
 (add-hook 'org-mode-hook 'visual-line-mode)
 
+(setq org-replace-disputed-keys t)
 (setq org-ellipsis " \u25bc")
+
+
+;; projectile
+;; ---
+(package-safe-install 'projectile)
+(projectile-global-mode)
+
+;; make scrolling smoother
+(progn
+  ;; only start scrolling when cursor is very close to edge of screen
+  (setq scroll-margin 1)
+  ;; don't recenter the cursor
+  (setq scroll-conservatively 1000)
+  (setq-default scroll-up-aggressively 0.01
+                scroll-down-aggressively 0.01)
+  )
+
+;; change smoothness of mouse scrolling
+(progn
+  (setq mouse-wheel-scroll-amount '(1 ((shift) . 1) ((control) . nil)))
+  (setq mouse-wheel-progressive-speed t))
+
+;; have C-x k kill current buffer
+(defun my/kill-this-buffer ()
+  "Kill current buffer without prompt"
+  (interactive)
+  (kill-buffer (current-buffer)))
+(bind-key "C-x k" #'my/kill-this-buffer)
+
+;; Auto-added configurations
 
 (custom-set-variables
  ;; custom-set-variables was added by Custom.
