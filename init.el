@@ -58,6 +58,7 @@
        (helm-keyboard-quit))))
 
 (define-key helm-map (kbd "DEL") 'helm-backspace)
+(bind-key "TAB" #'helm-execute-persistent-action helm-map)
 
 (package-safe-install 'elpy)
 (recentf-mode)
