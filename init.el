@@ -73,10 +73,18 @@
 (define-key global-map (kbd "s-z") #'undo-tree-undo)
 
 (add-hook 'org-mode-hook 'visual-line-mode)
-
-(setq org-replace-disputed-keys t)
 (setq org-ellipsis " \u25bc")
+(setq org-replace-disputed-keys t)
 
+(use-package scala-mode2
+  :ensure t
+  :mode (("\\.scala$" . scala-mode))
+  :config
+  (progn
+    (use-package ensime
+      :ensure t)
+
+    (add-hook 'scala-mode-hook #'ensime-scala-mode-hook)))
 
 ;; projectile
 ;; ---
@@ -104,6 +112,20 @@
   (interactive)
   (kill-buffer (current-buffer)))
 (bind-key "C-x k" #'my/kill-this-buffer)
+
+;; when calling kill-ring-save (M-w) or kill-region (C-w) without a selection,
+;; assume it means the current line
+(defadvice kill-ring-save (before slick-copy activate compile)
+  "When called interactively with no active region, copy a single line instead."
+  (interactive (if mark-active (list (region-beginning) (region-end))
+		 (list (line-beginning-position)
+		       (line-beginning-position 2)))))
+(defadvice kill-region (before slick-cut activate compile)
+  "When called interactively with no active region, kill a single line instead."
+  (interactive
+   (if mark-active (list (region-beginning) (region-end))
+     (list (line-beginning-position)
+	   (line-beginning-position 2)))))
 
 ;; Auto-added configurations
 
