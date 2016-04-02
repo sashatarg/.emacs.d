@@ -22,6 +22,8 @@
 (require 'use-package)
 
 (package-safe-install 'magit)
+(bind-key "s-m" #'magit-status)
+
 
 (windmove-default-keybindings)
 (put 'upcase-region 'disabled nil)
@@ -72,6 +74,7 @@
 
 (define-key global-map (kbd "s-y") #'undo-tree-redo)
 (define-key global-map (kbd "s-z") #'undo-tree-undo)
+(define-key global-map (kbd "C-z") #'undo-tree-undo)
 
 (add-hook 'org-mode-hook 'visual-line-mode)
 (setq org-ellipsis " \u25bc")
@@ -89,8 +92,32 @@
 
 ;; projectile
 ;; ---
-(package-safe-install 'projectile)
-(projectile-global-mode)
+(use-package projectile
+  :ensure t
+  :diminish projectile-mode
+  :config
+  (progn
+    ;; enable globally
+    (projectile-global-mode)
+
+    (setq projectile-enable-caching t)
+
+    (defun my/projectile-in-project? ()
+      "Returns project root if in project, else nil"
+      (ignore-errors (projectile-project-root)))
+
+    (use-package helm-projectile
+      :ensure t)
+
+    (defun my/projectile-helm-or-switch-project-dwim (&optional arg)
+      "Either runs helm-projectile or projectile-switch-project depending on context"
+      (interactive)
+      (if (my/projectile-in-project?)
+	  (helm-projectile arg)
+	(helm-projectile-switch-project arg)))
+
+    (bind-key "f" #'my/projectile-helm-or-switch-project-dwim projectile-command-map)
+    ))
 
 ;; make scrolling smoother
 (progn
