@@ -24,6 +24,15 @@
 (package-safe-install 'magit)
 (bind-key "s-m" #'magit-status)
 
+;; emacs reimplementation of virtualenvwrapper
+(use-package virtualenvwrapper
+  :ensure t
+  :config
+  (progn
+    ;; make shells start in virtualenv
+    (venv-initialize-interactive-shells)
+    (venv-initialize-eshell)
+    ))
 
 (windmove-default-keybindings)
 (put 'upcase-region 'disabled nil)
@@ -155,6 +164,42 @@
      (list (line-beginning-position)
 	   (line-beginning-position 2)))))
 
+;; emacs python development environment
+    ;; https://github.com/jorgenschaefer/elpy
+    (use-package elpy
+      :ensure t
+      :diminish elpy-mode
+      :config
+      (progn
+	;; use jedi as backed (seems to have better completion)
+	(setq elpy-rpc-backend "jedi")
+	;; modify elpy modules to disable some
+	(setq elpy-modules
+	      '(elpy-module-sane-defaults
+		elpy-module-company
+		elpy-module-eldoc
+		;; elpy-module-flymake
+		;; elpy-module-highlight-indentation
+		;; elpy-module-pyvenv
+		elpy-module-yasnippet))
+	;; enable elpy
+	(elpy-enable)
+	;; pop tag to be consistent with lisps and beside M-.
+	(bind-key "M-," #'pop-tag-mark elpy-mode-map)
+
+	(defun my/elpy-workon ()
+	  "Workon a virtualenv, then restart the elpy backend"
+	  (interactive)
+	  (venv-workon "yelab")
+	  (elpy-rpc-restart))
+
+	(my/elpy-workon)
+	))
+
+;; change text size
+
+(bind-key "C-+" #'text-scale-increase)
+(bind-key "C--" #'text-scale-decrease)
 ;; Auto-added configurations
 
 (custom-set-variables
