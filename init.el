@@ -196,10 +196,105 @@
 	(my/elpy-workon)
 	))
 
+    ;; allow automatically formatting buffers
+    (use-package py-autopep8
+      :ensure t
+      :config
+      (progn
+	(setq py-autopep8-options '("--max-line-length=80"))
+
+	;; minor mode to disable autopep8-ing
+	(defun my/py-autopep8-buffer ()
+	  "like py-autopep8-buffer, but only runs in python mode"
+	  (when (derived-mode-p #'python-mode)
+	    (py-autopep8-buffer)))
+
+	(define-minor-mode my/py-autopep8-mode
+	  "Minor mode to enable autopep8 on save"
+	  :lighter " P8"
+	  :init-value nil
+	  (cond
+	   (my/py-autopep8-mode
+	    (make-local-variable 'before-save-hook)
+	    (add-hook 'before-save-hook #'my/py-autopep8-buffer))
+	   (t
+	    (kill-local-variable 'before-save-hook))))
+
+	(defun my/py-autopep8-on ()
+	  "Enable my/py-autopep8-mode minor mode."
+	  (my/py-autopep8-mode 1))
+
+	(add-hook 'python-mode-hook #'my/py-autopep8-on)
+	))
+
+;; flycheck
+;; ---
+;; package for linting code
+(use-package flycheck
+  :ensure t
+  :commands flycheck-mode
+  :config
+  (progn
+    ;; AIRPLANE unicode
+    (diminish 'flycheck-mode (string 32 #x2708))
+    ))
+(add-hook 'python-mode-hook #'flycheck-mode)
+
 ;; change text size
 
 (bind-key "C-+" #'text-scale-increase)
 (bind-key "C--" #'text-scale-decrease)
+
+;; multiple-cursors
+;; ---
+(use-package multiple-cursors
+  :ensure t
+  :bind (("C-S-c C-S-c" . mc/edit-lines)
+	 ("C->" . mc/mark-next-like-this)
+	 ("C-<" . mc/mark-previous-like-this)
+	 ("C-c C-<" . mc/mark-all-like-this)
+	 ("M-<down-mouse-1>" . mc/no-op-load))
+  :config
+  (progn
+    (defun mc/no-op-load ())
+    ;; need to bind then unbind M-<down-mouse-1> because M-<mouse-1>
+    ;; by itself doesn't cause the package to load
+    (unbind-key "M-<down-mouse-1>")
+    (bind-key "M-<mouse-1>" 'mc/add-cursor-on-click)))
+
+;; make C-v / M-v / C-S-v / M-S-v use a half page instead of full
+(progn
+  (defun half-window-height ()
+    (/ (window-height) 2))
+  (defun move-down-half-window ()
+    (interactive)
+    (next-logical-line (half-window-height)))
+  (defun move-up-half-window ()
+    (interactive)
+    (previous-logical-line (half-window-height)))
+  (defun scroll-down-half-window (&optional arg)
+    (interactive)
+    (dotimes (x (or arg (half-window-height)))
+      (scroll-down-line)))
+  (defun scroll-up-half-window (&optional arg)
+    (interactive)
+    (dotimes (x (or arg (half-window-height)))
+      (scroll-up-line)))
+  (bind-key "C-v" #'move-down-half-window)
+  (bind-key "M-v" #'move-up-half-window)
+  (bind-key "C-S-v" #'scroll-up-half-window)
+  (bind-key "M-V" #'scroll-down-half-window)
+  )
+
+;; disable mouse
+  (dotimes (num 7)
+    (dolist (mouse-cmd '(mouse
+                         down-mouse
+                         drag-mouse
+                         double-mouse
+                         triple-mouse))
+      (global-unset-key (kbd (format "<%s-%s>" mouse-cmd num)))))
+
 ;; Auto-added configurations
 
 (custom-set-variables
