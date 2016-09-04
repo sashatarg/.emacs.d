@@ -24,6 +24,9 @@
 (package-safe-install 'magit)
 (bind-key "s-m" #'magit-status)
 
+;: disable backup
+(setq backup-inhibited t)
+
 ;; emacs reimplementation of virtualenvwrapper
 (use-package virtualenvwrapper
   :ensure t
@@ -64,8 +67,7 @@
   On error (read-only), quit without selecting."
     (interactive)
     (condition-case nil
-        (backward-delete-char 1)
-      (error
+        (backward-delete-char 1)      (error
        (helm-keyboard-quit))))
 
 (define-key helm-map (kbd "DEL") 'helm-backspace)
